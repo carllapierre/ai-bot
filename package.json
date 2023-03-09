@@ -1,0 +1,18 @@
+{
+  "name": "gilfoyle",
+  "version": "1.0.0",
+  "description": "A discord bot that imitates Gilfoyle",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Carl Lapierre",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.20",
+    "openai": "^3.1.0"
+  }
+}
