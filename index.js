@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const { Configuration, OpenAIApi } = require("openai");
+const PromptBuilder = require('./utils/PromptBuilder');
 
 require('dotenv').config()
 
@@ -32,27 +33,40 @@ bot.on('message', async (msg) => {
 		// Start typing in the chat channel to indicate that the bot is generating a response
 		msg.channel.startTyping();
 		// Extract the message text to send to the OpenAI API
-		const input = msg.content.substring(sanitizedCommand.length);
-		const author = msg.author.username;
+		const messages = [{
+			author: msg.author.username,
+			message: msg.content.substring(sanitizedCommand.length)
+		}];
 
+		let prompt = '';
+
+		const promptBuilder = new PromptBuilder({
+			messages: messages,
+			guidelines: process.env.GUIDELINES
+		})
+
+		try {
+			prompt = promptBuilder.get();
+		} catch (e) {
+			console.log(e);
+		}
 		const response = await openai.createCompletion({
-		model: "text-davinci-003",
-		//prompt: process.env.PROMPT,
-		temperature: 0.9,
-		max_tokens: 150,
-		top_p: 1,
-		frequency_penalty: 0,
-		presence_penalty: 0.6,
+			model: "text-davinci-003",
+			prompt: prompt,
+			temperature: 0.9,
+			max_tokens: 150,
+			top_p: 1,
+			frequency_penalty: 0,
+			presence_penalty: 0.6,
 		});
 
 		// Send the response back to the chat channel
 		// Split the response into multiple messages if it exceeds the maximum length allowed by Discord
 		const responseText = response.data.choices[0].text ?? '';    
-		console.log(response.data.choices,responseText.length,maxMessageLength, responseText.length / maxMessageLength )
 		const numMessages = Math.ceil(responseText.length / maxMessageLength);
 		const typingDelay = responseText.length * typingDelayPerCharacter;
+		console.log(responseText);
 		setTimeout(() => {
-			console.log(numMessages)
 			for (let i = 0; i < numMessages; i++) {
 				const startIndex = i * maxMessageLength;
 				const endIndex = (i + 1) * maxMessageLength;
